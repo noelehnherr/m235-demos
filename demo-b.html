@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root{color-scheme:light}html,body{margin:0}body{font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Kennzahlen-Umschalter</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: Umschalter oben, sortiertes Balkendiagramm als Hauptsache, darunter die Diagrammtabelle mit allen Kennzahlen. */
+:root {
+  --bg: #f5f6f1;
+  --surface: #ffffff;
+  --ink: #1c1d1a;
+  --ink2: #4d4f49;
+  --line: #d9dcd2;
+  --accent: #3f7a14;
+  --accent-ink: #ffffff;
+  --accent-soft: #eaf1dc;
+  --bar: #aab0a2;
+  --warn: #8a5a00;
+  --warn-soft: #f8ecd0;
+  --font-ui: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-num: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141612; --surface: #1c1f19; --ink: #eceee6; --ink2: #b4b8aa; --line: #34382e;
+    --accent: #8cc650; --accent-ink: #14210a; --accent-soft: #243018; --bar: #6a7060;
+    --warn: #e8b84a; --warn-soft: #382d12; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141612; --surface: #1c1f19; --ink: #eceee6; --ink2: #b4b8aa; --line: #34382e;
+  --accent: #8cc650; --accent-ink: #14210a; --accent-soft: #243018; --bar: #6a7060;
+  --warn: #e8b84a; --warn-soft: #382d12; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.45;
+  padding-block: 28px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 980px; margin: 0 auto; }
+.kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+h1 { font-size: 26px; line-height: 1.2; margin: 6px 0 6px; font-weight: 700; text-wrap: balance; }
+.lead { color: var(--ink2); max-width: 64ch; margin: 0 0 18px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; border: 0; padding: 0; }
+.seg legend { font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink2); margin-bottom: 8px; padding: 0; }
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; margin: 0; }
+.seg span { display: block; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; font-weight: 600; }
+.seg input:checked + span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
+.headline { font-size: 17px; font-weight: 700; margin: 0 0 4px; text-wrap: balance; }
+.sub { color: var(--ink2); font-size: 13px; margin: 0 0 14px; }
+.chart { display: grid; gap: 8px; }
+.cr { display: grid; grid-template-columns: 92px minmax(0, 1fr) 112px; gap: 10px; align-items: center; }
+.cr .name { font-size: 14px; text-align: right; }
+.cr .track { display: block; height: 22px; }
+.cr .fill { display: block; height: 22px; background: var(--bar); border-radius: 0 4px 4px 0; min-width: 2px; transition: width .3s ease; }
+.cr.top .fill { background: var(--accent); }
+.cr.top .name, .cr.top .val { font-weight: 700; }
+.cr .val { font-family: var(--font-num); font-size: 13px; font-variant-numeric: tabular-nums; }
+.opts { display: flex; gap: 10px; align-items: flex-start; margin-top: 4px; }
+.opts input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+.opts label { cursor: pointer; }
+.note { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--warn-soft); color: var(--ink); font-size: 14px; }
+.note b { color: var(--warn); }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 520px; }
+th { text-align: right; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink2); padding: 8px 10px; border-bottom: 2px solid var(--line); font-weight: 600; }
+th:first-child, td:first-child { text-align: left; }
+td { white-space: nowrap; padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; font-family: var(--font-num); font-size: 13px; font-variant-numeric: tabular-nums; }
+td:first-child { font-family: var(--font-ui); font-size: 14px; }
+th.sel, td.sel { background: var(--accent-soft); }
+th.sel { color: var(--accent); }
+.def { color: var(--ink2); font-size: 14px; margin: 0; }
+.src { color: var(--ink2); font-size: 12px; margin-top: 4px; }
+@media (prefers-reduced-motion: reduce) { .cr .fill { transition: none; } }
+@media (max-width: 480px) { .cr { grid-template-columns: 72px minmax(0, 1fr) 92px; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="kicker">LernHub Schweiz AG · 352 gültige Bestellungen, Januar bis Juni 2026 · Demo zu OnePager 2 (B2A)</div>
+  <h1>Wer trägt am meisten bei? Das hängt von der Kennzahl ab.</h1>
+  <p class="lead">Wechsle die Kennzahl und sieh, wie sich die Reihenfolge der Produktkategorien ändert. So lässt sich begründen, warum die Summe des Umsatzes zur Frage passt und die Anzahl Bestellungen nicht.</p>
+
+  <fieldset class="seg" id="seg">
+    <legend>Kennzahl</legend>
+    <label><input type="radio" name="m" value="n"><span>Anzahl Bestellungen</span></label>
+    <label><input type="radio" name="m" value="sum" checked><span>Umsatz (Summe)</span></label>
+    <label><input type="radio" name="m" value="share"><span>Anteil am Umsatz</span></label>
+    <label><input type="radio" name="m" value="avg"><span>Ø Bestellwert</span></label>
+    <label><input type="radio" name="m" value="med"><span>Median Bestellwert</span></label>
+  </fieldset>
+
+  <div class="panel">
+    <p class="headline" id="headline"></p>
+    <p class="sub" id="sub"></p>
+    <div class="chart" id="chart"></div>
+  </div>
+
+  <div class="panel">
+    <div class="opts"><input type="checkbox" id="outl"><label for="outl">Bestellungen über CHF 1'000 ausblenden <span id="outln"></span></label></div>
+    <div class="note" id="note" hidden></div>
+    <p class="def" id="def" style="margin-top:12px"></p>
+  </div>
+
+  <div class="panel">
+    <p class="headline">Diagrammtabelle</p>
+    <p class="sub">Alle Kennzahlen je Kategorie. Die gewählte Spalte ist hinterlegt.</p>
+    <div class="tablewrap"><table id="tbl"></table></div>
+  </div>
+  <div class="src">Quelle: shop_bestellungen_extended.csv, bereinigt (Duplikate und ungültige Status entfernt, Kategorien vereinheitlicht).</div>
+</div>
+
+<script>
+const DATA = [["Kurs",71.4],["Abo",39.0],["Workshop",450.0],["Workshop",620.0],["Abo",154.0],["Abo",132.05],["E-Book",30.6],["Workshop",505.0],["Zertifikat",180.5],["Coaching",552.5],["Coaching",320.0],["Kurs",99.0],["E-Book",44.0],["E-Book",19.0],["Zertifikat",950.0],["Kurs",199.0],["Abo",100.8],["Workshop",442.5],["Kurs",159.0],["Abo",67.2],["Abo",150.1],["Kurs",154.0],["Zertifikat",180.0],["Kurs",204.0],["Workshop",396.0],["E-Book",24.65],["Workshop",590.0],["Coaching",234.5],["Zertifikat",150.0],["Kurs",84.0],["E-Book",29.0],["Kurs",139.0],["E-Book",29.0],["Coaching",251.25],["Kurs",142.8],["Kurs",209.0],["Workshop",590.0],["Kurs",139.4],["Workshop",500.0],["E-Book",19.0],["Kurs",79.0],["Workshop",605.0],["Abo",149.0],["Coaching",1260.0],["Kurs",149.0],["Workshop",392.0],["Kurs",89.0],["Zertifikat",190.0],["Abo",58.0],["Zertifikat",200.0],["Abo",35.1],["E-Book",16.15],["Abo",39.0],["Zertifikat",126.0],["Workshop",490.0],["Abo",39.0],["Workshop",3250.0],["Abo",79.0],["Zertifikat",185.0],["Kurs",149.8],["Coaching",330.0],["Abo",119.2],["Kurs",94.0],["Abo",108.0],["Workshop",490.0],["Abo",39.0],["Kurs",99.0],["Abo",111.75],["Kurs",198.55],["Kurs",149.0],["Coaching",425.0],["Zertifikat",220.0],["Abo",139.0],["E-Book",24.0],["Workshop",622.25],["E-Book",44.0],["Kurs",94.0],["Kurs",104.0],["E-Book",78.0],["Kurs",154.0],["Kurs",346.8],["Workshop",465.5],["E-Book",25.0],["Zertifikat",171.0],["Coaching",420.0],["Kurs",127.2],["Zertifikat",148.75],["E-Book",34.0],["Zertifikat",195.0],["Coaching",664.0],["E-Book",30.0],["Workshop",441.0],["Abo",37.8],["E-Book",39.0],["Abo",111.75],["Kurs",149.0],["Coaching",264.0],["E-Book",12.75],["Coaching",256.0],["Kurs",164.0],["Kurs",111.3],["Kurs",159.0],["Abo",55.3],["E-Book",26.1],["Abo",154.0],["Coaching",420.0],["Kurs",154.0],["Kurs",208.0],["E-Book",40.0],["Workshop",498.75],["Zertifikat",166.5],["Coaching",236.25],["Abo",91.2],["Zertifikat",175.5],["Kurs",155.2],["Kurs",62.3],["Coaching",405.0],["Workshop",448.0],["Abo",89.0],["Abo",166.2],["Kurs",147.9],["Abo",75.65],["E-Book",15.2],["E-Book",25.5],["Abo",146.3],["Workshop",650.0],["Kurs",154.0],["Kurs",141.55],["Workshop",468.0],["Abo",79.0],["Abo",139.0],["Kurs",194.0],["Workshop",1200.0],["Abo",54.0],["E-Book",50.0],["Abo",74.0],["Kurs",204.0],["Coaching",389.5],["Kurs",110.6],["Coaching",320.0],["Abo",40.6],["Zertifikat",146.25],["Workshop",505.0],["Zertifikat",144.0],["Kurs",159.0],["Abo",73.5],["Kurs",115.5],["Abo",79.0],["Workshop",600.0],["Abo",51.75],["Abo",139.0],["Zertifikat",210.0],["Zertifikat",184.5],["E-Book",26.25],["Coaching",335.0],["Kurs",145.5],["Kurs",209.0],["Kurs",174.0],["Coaching",420.0],["Abo",432.0],["Kurs",118.3],["Abo",89.0],["Abo",154.0],["Kurs",127.2],["Zertifikat",153.0],["Zertifikat",184.5],["Abo",79.0],["Kurs",126.65],["Zertifikat",161.5],["E-Book",14.25],["Abo",75.05],["Coaching",231.0],["Coaching",307.5],["E-Book",19.0],["E-Book",10.5],["Kurs",194.0],["Coaching",1485.0],["Kurs",151.05],["Abo",84.6],["Coaching",378.0],["E-Book",29.0],["Abo",65.55],["Abo",89.0],["Coaching",290.5],["Workshop",562.5],["Kurs",328.0],["Workshop",440.0],["Workshop",480.0],["Workshop",660.0],["Zertifikat",213.75],["Abo",208.6],["Abo",33.0],["Kurs",104.3],["Coaching",236.25],["Abo",33.0],["E-Book",29.0],["Abo",49.0],["Kurs",189.0],["E-Book",25.0],["Zertifikat",486.0],["Abo",43.2],["Zertifikat",198.0],["Workshop",561.0],["Workshop",560.5],["Kurs",115.5],["Kurs",193.8],["Zertifikat",203.5],["E-Book",24.0],["Coaching",326.25],["Workshop",490.0],["Workshop",660.0],["Workshop",833.0],["Zertifikat",340.0],["Abo",58.0],["E-Book",20.0],["E-Book",42.75],["Abo",164.0],["E-Book",10.5],["Coaching",224.0],["Coaching",336.0],["Coaching",297.5],["Abo",84.6],["Workshop",1950.0],["E-Book",145.0],["Coaching",322.5],["Coaching",435.0],["Kurs",65.8],["Abo",67.15],["Workshop",516.0],["Kurs",179.1],["Coaching",268.0],["Kurs",104.3],["Abo",69.0],["Workshop",531.0],["Kurs",130.9],["Kurs",80.1],["Abo",126.4],["E-Book",40.0],["Zertifikat",144.0],["E-Book",21.25],["Abo",104.3],["Abo",24.65],["E-Book",9.0],["Coaching",435.0],["Coaching",394.25],["Abo",33.15],["Kurs",318.4],["Coaching",318.75],["Kurs",204.0],["Abo",48.6],["Zertifikat",156.0],["Workshop",367.5],["E-Book",24.0],["Kurs",93.6],["Abo",104.25],["Workshop",416.5],["Zertifikat",224.5],["Kurs",149.0],["Kurs",286.2],["E-Book",34.0],["Abo",33.15],["E-Book",27.2],["Abo",135.15],["Abo",74.1],["E-Book",21.75],["Abo",71.2],["Abo",89.0],["Abo",164.0],["Abo",39.0],["Workshop",585.0],["Abo",158.0],["Workshop",585.0],["Abo",73.5],["E-Book",29.0],["Abo",75.2],["Workshop",1755.0],["Zertifikat",170.0],["E-Book",15.3],["Zertifikat",351.5],["Abo",37.8],["Coaching",415.0],["Abo",151.65],["Workshop",665.0],["Kurs",135.2],["Kurs",199.0],["Kurs",62.3],["Coaching",322.5],["Coaching",420.0],["Kurs",119.2],["Abo",79.0],["Zertifikat",185.0],["E-Book",8.1],["Abo",39.0],["Zertifikat",459.0],["Abo",506.6],["Abo",79.0],["Kurs",121.8],["Abo",74.0],["Abo",79.0],["Zertifikat",300.0],["E-Book",28.9],["Workshop",490.0],["E-Book",18.0],["Abo",79.9],["Kurs",139.3],["Abo",29.25],["Kurs",151.05],["Kurs",84.0],["Abo",34.3],["Kurs",318.0],["Workshop",470.25],["Coaching",248.0],["Workshop",470.25],["E-Book",24.0],["Workshop",590.0],["Abo",-19.0],["Abo",159.0],["Kurs",89.3],["Abo",58.65],["Kurs",104.0],["E-Book",24.65],["E-Book",24.0],["Abo",111.0],["Kurs",680.5],["Kurs",141.55],["Kurs",67.15],["Coaching",252.0],["Abo",144.0],["Zertifikat",199.5],["Abo",44.0],["Abo",42.55],["Abo",111.75],["E-Book",34.0],["Zertifikat",210.0],["Kurs",84.15],["Kurs",197.6],["Workshop",660.0],["Kurs",160.5],["Abo",66.6],["E-Book",44.2],["E-Book",20.3],["Zertifikat",205.0],["E-Book",27.2],["Kurs",170.1],["Kurs",79.8],["E-Book",29.0],["Abo",250.2],["Zertifikat",157.5],["Workshop",476.0],["Kurs",80.1],["Kurs",209.0],["Kurs",79.0]];   // [kategorie, umsatz_chf] je gültiger Bestellung
+const MEASURES = {
+  n:     { label: 'Anzahl Bestellungen', short: 'Anzahl', unit: 'Bestellungen' },
+  sum:   { label: 'Umsatz (Summe)', short: 'Umsatz', unit: 'CHF' },
+  share: { label: 'Anteil am Umsatz', short: 'Anteil', unit: '%' },
+  avg:   { label: 'Ø Bestellwert', short: 'Ø Wert', unit: 'CHF' },
+  med:   { label: 'Median Bestellwert', short: 'Median', unit: 'CHF' }
+};
+const DEFS = {
+  n: 'Anzahl Bestellungen zählt, wie oft bestellt wurde, und sagt nichts darüber, wie viel Geld dabei floss.',
+  sum: 'Die Summe addiert alle Beträge einer Kategorie. Sie beantwortet direkt: Wer trägt wie viel zum Umsatz bei?',
+  share: 'Anteil = Umsatz der Kategorie geteilt durch den Gesamtumsatz. So sind die Kategorien direkt vergleichbar.',
+  avg: 'Der Durchschnitt teilt die Summe durch die Anzahl. Einzelne sehr grosse Bestellungen ziehen ihn nach oben.',
+  med: 'Der Median ist der mittlere Wert, wenn man alle Beträge sortiert: Die Hälfte der Bestellungen liegt darunter. Er ist robust gegen Ausreisser und zeigt die typische Bestellung.'
+};
+const fmt = (x, d = 0) => x.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+const median = a => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const show = (m, v) => m === 'n' ? fmt(v) : m === 'share' ? v.toFixed(1) + ' %' : 'CHF ' + fmt(v, m === 'sum' ? 0 : 2);
+
+const state = { m: 'sum', outl: false };
+const bigN = DATA.filter(r => r[1] > 1000).length;
+document.getElementById('outln').textContent = '(' + bigN + ' Bestellungen)';
+
+function stats() {
+  const rows = DATA.filter(r => !(state.outl && r[1] > 1000));
+  const total = rows.reduce((a, r) => a + r[1], 0);
+  const cats = [...new Set(DATA.map(r => r[0]))];
+  return cats.map(c => {
+    const v = rows.filter(r => r[0] === c).map(r => r[1]);
+    const sum = v.reduce((a, x) => a + x, 0);
+    return { c, n: v.length, sum, share: sum / total * 100, avg: sum / v.length, med: median(v) };
+  });
+}
+
+function render() {
+  const m = state.m, st = stats().sort((a, b) => b[m] - a[m]);
+  const max = Math.max(...st.map(s => s[m]), 1e-9);
+  const top = st[0];
+  const rank = c => st.findIndex(s => s.c === c) + 1;
+  document.getElementById('headline').textContent = 'Nach «' + MEASURES[m].label + '» führt ' + top.c;
+  document.getElementById('sub').textContent = 'Workshop liegt auf Platz ' + rank('Workshop') + ' von ' + st.length + ', E-Book auf Platz ' + rank('E-Book') + '.';
+  const chart = document.getElementById('chart'); chart.innerHTML = '';
+  st.forEach((s, i) => {
+    const r = document.createElement('div'); r.className = 'cr' + (i === 0 ? ' top' : '');
+    r.innerHTML = '<span class="name"></span><span class="track"><span class="fill"></span></span><span class="val"></span>';
+    r.querySelector('.name').textContent = s.c;
+    r.querySelector('.fill').style.width = (s[m] / max * 100) + '%';
+    r.querySelector('.val').textContent = show(m, s[m]);
+    chart.appendChild(r);
+  });
+  document.getElementById('def').textContent = DEFS[m];
+  const note = document.getElementById('note');
+  if (state.outl) {
+    note.hidden = false;
+    note.innerHTML = '<b>Achtung:</b> Die Summe und die Anteile sinken, obwohl diese Bestellungen echter Umsatz sind. Der Median bleibt fast gleich. Für den Beitrag zum Umsatz darf man grosse Bestellungen deshalb nicht entfernen.';
+  } else { note.hidden = true; }
+
+  // Tabelle
+  const cols = ['n', 'sum', 'share', 'avg', 'med'];
+  let h = '<thead><tr><th>Kategorie</th>' + cols.map(k => '<th class="' + (k === m ? 'sel' : '') + '">' + MEASURES[k].short + '</th>').join('') + '</tr></thead><tbody>';
+  st.forEach(s => {
+    h += '<tr><td>' + s.c + '</td>' + cols.map(k => '<td class="' + (k === m ? 'sel' : '') + '">' + show(k, s[k]) + '</td>').join('') + '</tr>';
+  });
+  document.getElementById('tbl').innerHTML = h + '</tbody>';
+}
+document.querySelectorAll('input[name=m]').forEach(el => el.addEventListener('change', e => { state.m = e.target.value; render(); }));
+document.getElementById('outl').addEventListener('change', e => { state.outl = e.target.checked; render(); });
+render();
+</script>
+
+</body>
+</html>

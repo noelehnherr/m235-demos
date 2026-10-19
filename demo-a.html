@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root{color-scheme:light}html,body{margin:0}body{font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Gültige Bestellungen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: links Schritte 1 bis 3 (Reihenfolge ist Information), rechts das Ergebnis; mobil untereinander. */
+:root {
+  --bg: #f5f6f1;
+  --surface: #ffffff;
+  --ink: #1c1d1a;
+  --ink2: #4d4f49;
+  --line: #d9dcd2;
+  --accent: #3f7a14;
+  --accent-ink: #ffffff;
+  --accent-soft: #eaf1dc;
+  --bar-off: #c4c8bb;
+  --bad: #b3382c;
+  --bad-soft: #f6e3df;
+  --font-ui: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-num: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141612; --surface: #1c1f19; --ink: #eceee6; --ink2: #b4b8aa; --line: #34382e;
+    --accent: #8cc650; --accent-ink: #14210a; --accent-soft: #243018; --bar-off: #4a4f42;
+    --bad: #ee8a7a; --bad-soft: #3a211d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141612; --surface: #1c1f19; --ink: #eceee6; --ink2: #b4b8aa; --line: #34382e;
+  --accent: #8cc650; --accent-ink: #14210a; --accent-soft: #243018; --bar-off: #4a4f42;
+  --bad: #ee8a7a; --bad-soft: #3a211d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.45;
+  padding-block: 28px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1040px; margin: 0 auto; }
+.kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+h1 { font-size: 26px; line-height: 1.2; margin: 6px 0 6px; font-weight: 700; text-wrap: balance; }
+.lead { color: var(--ink2); max-width: 62ch; margin: 0 0 18px; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+button, .btn { font: inherit; cursor: pointer; }
+.preset { border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 8px 14px; border-radius: 8px; font-weight: 600; }
+.preset:hover { border-color: var(--accent); }
+.preset.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 800px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+.step + .step { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.step h2 { font-size: 13px; letter-spacing: .07em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; font-weight: 700; }
+.row { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; }
+.row input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.row label { flex: 1; min-width: 0; cursor: pointer; }
+.row .why { display: block; color: var(--ink2); font-size: 13px; }
+.row .num { font-family: var(--font-num); font-size: 13px; color: var(--ink2); text-align: right; white-space: nowrap; }
+.big { display: flex; gap: 28px; flex-wrap: wrap; align-items: baseline; }
+.big .n { font-family: var(--font-num); font-size: 40px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.big .u { color: var(--ink2); font-size: 13px; }
+.calc { font-family: var(--font-num); font-size: 14px; margin: 14px 0; padding: 10px 12px; background: var(--accent-soft); border-radius: 8px; overflow-wrap: anywhere; }
+.verdict { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 4px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; font-weight: 600; font-size: 13px; }
+.pill.ok { background: var(--accent-soft); color: var(--accent); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.ref { color: var(--ink2); font-size: 14px; }
+.bars { margin-top: 16px; display: grid; gap: 8px; }
+.bar { display: grid; grid-template-columns: 112px minmax(0, 1fr) 96px; gap: 10px; align-items: center; font-size: 13px; }
+.bar .track { display: block; height: 14px; }
+.bar .fill { display: block; height: 14px; border-radius: 3px; background: var(--accent); min-width: 2px; transition: width .25s ease; }
+.bar.off .fill { background: var(--bar-off); }
+.bar.off .name { color: var(--ink2); text-decoration: line-through; }
+.bar .val { font-family: var(--font-num); text-align: right; font-variant-numeric: tabular-nums; }
+.legend { color: var(--ink2); font-size: 12px; margin-top: 10px; }
+.src { color: var(--ink2); font-size: 12px; margin-top: 18px; }
+@media (prefers-reduced-motion: reduce) { .bar .fill { transition: none; } }
+@media (max-width: 420px) { .bar { grid-template-columns: 92px minmax(0, 1fr) 84px; } .big .n { font-size: 32px; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="kicker">LernHub Schweiz AG · Bestellungen Januar bis Juni 2026 · Demo zu OnePager 1 (A1A)</div>
+  <h1>Welche Zeilen zählen zum Umsatz?</h1>
+  <p class="lead">Der Bestellexport ist strukturiert, aber nicht automatisch auswertbar. Schalte die Schritte ein und aus und beobachte, wie sich Zeilenzahl und Umsatz verändern.</p>
+  <div class="presets">
+    <button class="preset" id="p-raw" type="button">Rohdatei (nichts bereinigt)</button>
+    <button class="preset" id="p-err" type="button">Typischer Fehler: nur «abgeschlossen» filtern</button>
+    <button class="preset primary" id="p-clean" type="button">Bereinigt (richtig)</button>
+  </div>
+
+  <div class="grid">
+    <div class="panel" id="controls">
+      <div class="step">
+        <h2>Schritt 1 · Duplikate</h2>
+        <div class="row"><input type="checkbox" id="dedup"><label for="dedup">Doppelte bestellung_id entfernen
+          <span class="why">Dieselbe Bestellung steht zweimal in der Datei und würde doppelt zählen.</span></label><span class="num" id="dupcount"></span></div>
+      </div>
+      <div class="step">
+        <h2>Schritt 2 · Schreibweise</h2>
+        <div class="row"><input type="checkbox" id="norm"><label for="norm">Gross- und Kleinschreibung vereinheitlichen
+          <span class="why">«Abgeschlossen» und «abgeschlossen» sind sonst zwei verschiedene Status.</span></label></div>
+      </div>
+      <div class="step">
+        <h2>Schritt 3 · Status zählen</h2>
+        <div id="statuslist"></div>
+      </div>
+    </div>
+
+    <div class="panel" aria-live="polite">
+      <div class="big">
+        <div><div class="n" id="n-rows">0</div><div class="u">Zeilen in der Auswertung</div></div>
+        <div><div class="n" id="n-sum">0</div><div class="u">Umsatz in CHF</div></div>
+      </div>
+      <div class="calc" id="calc"></div>
+      <div class="verdict"><span class="pill" id="pill"></span><span id="delta"></span></div>
+      <div class="ref" id="ref"></div>
+      <div class="bars" id="bars"></div>
+      <div class="legend">Grün: wird gezählt. Grau durchgestrichen: wird nicht gezählt. Balkenlänge = Umsatz je Status.</div>
+    </div>
+  </div>
+  <div class="src">Quelle: shop_bestellungen_extended.csv (445 Zeilen, 32 Spalten), Modul 235. Gültig sind bezahlt, abgeschlossen und versendet.</div>
+</div>
+
+<script>
+const ROWS = [["abgeschlossen",71.4,0],["abgeschlossen",39.0,0],["abgeschlossen",450.0,0],["bezahlt",620.0,0],["abgeschlossen",154.0,0],["rückerstattet",144.5,0],["abgeschlossen",132.05,0],["abgeschlossen",30.6,0],["Abgeschlossen",505.0,0],["abgeschlossen",180.5,0],["versendet",552.5,0],["versendet",320.0,0],["abgeschlossen",99.0,0],["Storniert",155.2,0],["bezahlt",44.0,0],["abgeschlossen",19.0,0],["offen",148.75,0],["offen",135.15,0],["bezahlt",950.0,0],["bezahlt",199.0,0],["bezahlt",100.8,0],["bezahlt",442.5,0],["versendet",159.0,0],["bezahlt",67.2,0],["rückerstattet",127.2,0],["offen",119.2,0],["storniert",37.05,0],["bezahlt",150.1,0],["bezahlt",154.0,0],["abgeschlossen",180.0,0],["abgeschlossen",204.0,0],["bezahlt",396.0,0],["Abgeschlossen",24.65,0],["bezahlt",590.0,0],["bezahlt",234.5,0],["versendet",150.0,0],["bezahlt",84.0,0],["bezahlt",29.0,0],["bezahlt",139.0,0],["abgeschlossen",29.0,0],["bezahlt",251.25,0],["rückerstattet",157.5,0],["storniert",14.0,0],["abgeschlossen",142.8,0],["bezahlt",209.0,0],["rückerstattet",147.6,0],["abgeschlossen",590.0,0],["bezahlt",139.4,0],["versendet",500.0,0],["versendet",19.0,0],["bezahlt",79.0,0],["bezahlt",605.0,0],["storniert",141.55,0],["bezahlt",149.0,0],["versendet",1260.0,0],["offen",320.0,0],["bezahlt",149.0,0],["bezahlt",392.0,0],["abgeschlossen",89.0,0],["versendet",190.0,0],["versendet",58.0,0],["versendet",200.0,0],["bezahlt",35.1,0],["bezahlt",16.15,0],["abgeschlossen",39.0,0],["versendet",126.0,0],["bezahlt",490.0,0],["bezahlt",39.0,0],["Abgeschlossen",3250.0,0],["bezahlt",79.0,0],["abgeschlossen",185.0,0],["abgeschlossen",149.8,0],["bezahlt",330.0,0],["bezahlt",119.2,0],["rückerstattet",89.1,0],["bezahlt",94.0,0],["versendet",108.0,0],["storniert",37.8,0],["rückerstattet",79.0,0],["bezahlt",490.0,0],["bezahlt",39.0,0],["test",0.0,0],["bezahlt",99.0,0],["versendet",111.75,0],["versendet",198.55,0],["bezahlt",149.0,0],["abgeschlossen",425.0,0],["bezahlt",220.0,0],["abgeschlossen",139.0,0],["bezahlt",24.0,0],["storniert",268.2,0],["versendet",622.25,0],["versendet",44.0,0],["bezahlt",94.0,0],["bezahlt",104.0,0],["abgeschlossen",78.0,0],["storniert",420.0,0],["bezahlt",154.0,0],["bezahlt",346.8,0],["abgeschlossen",465.5,0],["bezahlt",25.0,0],["abgeschlossen",171.0,0],["bezahlt",420.0,0],["bezahlt",127.2,0],["bezahlt",148.75,0],["bezahlt",34.0,0],["versendet",195.0,0],["bezahlt",664.0,0],["versendet",30.0,0],["abgeschlossen",441.0,0],["bezahlt",37.8,0],["abgeschlossen",39.0,0],["versendet",111.75,0],["bezahlt",149.0,0],["abgeschlossen",264.0,0],["bezahlt",12.75,0],["bezahlt",256.0,0],["versendet",164.0,0],["bezahlt",111.3,0],["versendet",159.0,0],["bezahlt",55.3,0],["bezahlt",26.1,0],["versendet",154.0,0],["versendet",420.0,0],["abgeschlossen",154.0,0],["test",-99.0,0],["offen",35.1,0],["abgeschlossen",208.0,0],["abgeschlossen",40.0,0],["bezahlt",498.75,0],["versendet",166.5,0],["bezahlt",236.25,0],["versendet",91.2,0],["versendet",175.5,0],["storniert",297.5,0],["bezahlt",155.2,0],["storniert",39.2,0],["abgeschlossen",62.3,0],["abgeschlossen",405.0,0],["rückerstattet",576.0,0],["bezahlt",448.0,0],["bezahlt",89.0,0],["abgeschlossen",166.2,0],["abgeschlossen",147.9,0],["abgeschlossen",75.65,0],["offen",135.15,0],["versendet",15.2,0],["offen",425.0,0],["storniert",286.2,0],["bezahlt",25.5,0],["bezahlt",146.3,0],["storniert",495.0,0],["bezahlt",650.0,0],["versendet",154.0,0],["abgeschlossen",141.55,0],["abgeschlossen",468.0,0],["storniert",1062.0,0],["bezahlt",79.0,0],["bezahlt",139.0,0],["bezahlt",194.0,0],["bezahlt",1200.0,0],["versendet",54.0,0],["abgeschlossen",50.0,0],["offen",210.0,0],["bezahlt",74.0,0],["abgeschlossen",204.0,0],["abgeschlossen",389.5,0],["bezahlt",110.6,0],["bezahlt",320.0,0],["abgeschlossen",40.6,0],["bezahlt",146.25,0],["storniert",111.2,0],["rückerstattet",25.0,0],["bezahlt",505.0,0],["versendet",144.0,0],["bezahlt",159.0,0],["abgeschlossen",73.5,0],["abgeschlossen",115.5,0],["abgeschlossen",79.0,0],["bezahlt",600.0,0],["abgeschlossen",51.75,0],["storniert",9.0,0],["abgeschlossen",139.0,0],["bezahlt",210.0,0],["versendet",184.5,0],["abgeschlossen",26.25,0],["bezahlt",335.0,0],["bezahlt",145.5,0],["bezahlt",209.0,0],["bezahlt",174.0,0],["bezahlt",420.0,0],["bezahlt",432.0,0],["storniert",268.2,1],["bezahlt",118.3,0],["storniert",67.15,0],["offen",138.0,0],["versendet",89.0,0],["rückerstattet",-49.0,0],["bezahlt",154.0,0],["test",58.8,0],["offen",108.0,0],["versendet",127.2,0],["abgeschlossen",153.0,0],["bezahlt",184.5,0],["versendet",79.0,0],["bezahlt",126.65,0],["rückerstattet",127.2,0],["bezahlt",161.5,0],["abgeschlossen",14.25,0],["bezahlt",75.05,0],["versendet",231.0,0],["abgeschlossen",307.5,0],["storniert",298.0,0],["bezahlt",19.0,0],["bezahlt",10.5,0],["abgeschlossen",194.0,0],["bezahlt",1485.0,0],["versendet",151.05,0],["storniert",139.0,0],["abgeschlossen",84.6,0],["bezahlt",378.0,0],["storniert",332.0,0],["bezahlt",29.0,0],["bezahlt",65.55,0],["abgeschlossen",89.0,0],["bezahlt",290.5,0],["bezahlt",562.5,0],["versendet",328.0,0],["versendet",440.0,0],["abgeschlossen",480.0,0],["bezahlt",660.0,0],["storniert",409.5,0],["abgeschlossen",213.75,0],["bezahlt",208.6,0],["versendet",33.0,0],["bezahlt",104.3,0],["bezahlt",236.25,0],["abgeschlossen",33.0,0],["abgeschlossen",29.0,0],["storniert",645.0,0],["bezahlt",49.0,0],["abgeschlossen",189.0,0],["bezahlt",25.0,0],["rückerstattet",420.0,0],["abgeschlossen",486.0,0],["bezahlt",43.2,0],["bezahlt",198.0,0],["bezahlt",561.0,0],["abgeschlossen",560.5,0],["bezahlt",115.5,0],["bezahlt",193.8,0],["bezahlt",203.5,0],["abgeschlossen",24.0,0],["bezahlt",326.25,0],["versendet",490.0,0],["abgeschlossen",660.0,0],["offen",32.3,0],["abgeschlossen",833.0,0],["storniert",28.0,0],["bezahlt",340.0,0],["bezahlt",58.0,0],["versendet",20.0,0],["bezahlt",42.75,0],["abgeschlossen",164.0,0],["versendet",10.5,0],["abgeschlossen",224.0,0],["abgeschlossen",336.0,0],["bezahlt",297.5,0],["storniert",89.3,0],["bezahlt",84.6,0],["bezahlt",1950.0,0],["bezahlt",145.0,0],["bezahlt",322.5,0],["bezahlt",435.0,0],["abgeschlossen",65.8,0],["bezahlt",67.15,0],["bezahlt",516.0,0],["abgeschlossen",179.1,0],["versendet",268.0,0],["versendet",104.3,0],["bezahlt",69.0,0],["storniert",427.5,0],["bezahlt",531.0,0],["storniert",74.1,0],["bezahlt",130.9,0],["test",-199.0,0],["versendet",80.1,0],["bezahlt",126.4,0],["bezahlt",40.0,0],["storniert",22.4,0],["bezahlt",144.0,0],["abgeschlossen",21.25,0],["abgeschlossen",104.3,0],["abgeschlossen",24.65,0],["abgeschlossen",9.0,0],["abgeschlossen",435.0,0],["versendet",394.25,0],["abgeschlossen",33.15,0],["storniert",168.0,0],["abgeschlossen",318.4,0],["bezahlt",318.75,0],["versendet",204.0,0],["Storniert",495.0,0],["bezahlt",48.6,0],["bezahlt",156.0,0],["bezahlt",367.5,0],["versendet",24.0,0],["bezahlt",93.6,0],["bezahlt",104.25,0],["bezahlt",416.5,0],["offen",29.0,0],["bezahlt",150.1,1],["bezahlt",224.5,0],["offen",357.75,0],["storniert",69.3,0],["rückerstattet",79.0,1],["versendet",149.0,0],["rückerstattet",-199.0,0],["bezahlt",286.2,0],["versendet",34.0,0],["storniert",14.25,0],["storniert",665.0,0],["bezahlt",33.15,0],["abgeschlossen",27.2,0],["bezahlt",135.15,0],["abgeschlossen",39.0,1],["storniert",116.0,0],["rückerstattet",170.0,0],["Storniert",304.0,0],["bezahlt",74.1,0],["bezahlt",21.75,0],["abgeschlossen",71.2,0],["bezahlt",89.0,0],["abgeschlossen",164.0,0],["bezahlt",39.0,0],["bezahlt",585.0,0],["versendet",158.0,0],["storniert",151.05,0],["offen",169.15,0],["bezahlt",585.0,0],["test",-99.0,0],["bezahlt",660.0,1],["bezahlt",73.5,0],["versendet",29.0,0],["storniert",100.8,0],["storniert",141.55,0],["bezahlt",75.2,0],["versendet",1755.0,0],["rückerstattet",115.5,0],["bezahlt",170.0,0],["bezahlt",322.5,1],["storniert",270.0,0],["bezahlt",15.3,0],["abgeschlossen",351.5,0],["versendet",37.8,0],["bezahlt",415.0,0],["bezahlt",151.65,0],["bezahlt",665.0,0],["abgeschlossen",135.2,0],["bezahlt",199.0,0],["versendet",62.3,0],["rückerstattet",15.0,0],["bezahlt",322.5,0],["versendet",420.0,0],["bezahlt",119.2,0],["abgeschlossen",79.0,0],["bezahlt",185.0,0],["versendet",8.1,0],["versendet",39.0,0],["test",215.0,0],["versendet",459.0,0],["bezahlt",506.6,0],["abgeschlossen",79.0,0],["bezahlt",121.8,0],["bezahlt",664.0,1],["versendet",74.0,0],["versendet",79.0,0],["bezahlt",300.0,0],["bezahlt",28.9,0],["versendet",490.0,0],["bezahlt",18.0,0],["bezahlt",79.9,0],["bezahlt",139.3,0],["storniert",149.0,0],["test",0.0,0],["versendet",29.25,0],["bezahlt",151.05,0],["bezahlt",84.0,0],["versendet",34.3,0],["bezahlt",318.0,0],["versendet",470.25,0],["storniert",-19.0,0],["bezahlt",248.0,0],["storniert",104.3,0],["versendet",470.25,0],["abgeschlossen",24.0,0],["bezahlt",590.0,0],["abgeschlossen",-19.0,0],["bezahlt",159.0,0],["versendet",89.3,0],["bezahlt",58.65,0],["bezahlt",104.0,0],["offen",44.0,0],["offen",199.0,0],["abgeschlossen",24.65,0],["rückerstattet",27.0,0],["versendet",24.0,0],["versendet",111.0,0],["versendet",680.5,0],["versendet",141.55,0],["versendet",67.15,0],["bezahlt",252.0,0],["bezahlt",144.0,0],["versendet",1260.0,1],["abgeschlossen",199.5,0],["bezahlt",44.0,0],["versendet",42.55,0],["bezahlt",111.75,0],["abgeschlossen",79.0,1],["offen",318.0,0],["bezahlt",34.0,0],["storniert",22.4,1],["bezahlt",210.0,0],["bezahlt",84.15,0],["abgeschlossen",197.6,0],["abgeschlossen",660.0,0],["versendet",160.5,0],["bezahlt",66.6,0],["bezahlt",44.2,0],["abgeschlossen",20.3,0],["abgeschlossen",205.0,0],["abgeschlossen",27.2,0],["bezahlt",170.1,0],["bezahlt",79.8,0],["bezahlt",29.0,0],["storniert",580.5,0],["bezahlt",250.2,0],["bezahlt",157.5,0],["bezahlt",476.0,0],["bezahlt",80.1,0],["bezahlt",209.0,0],["offen",251.25,0],["offen",29.25,0],["rückerstattet",475.0,0],["bezahlt",79.0,0]];            // [status_roh, umsatz_chf, ist_duplikat]
+const VALID = ['bezahlt', 'abgeschlossen', 'versendet'];
+const WHY = {
+  'bezahlt': 'Geld ist eingegangen.',
+  'abgeschlossen': 'Bestellung ist fertig abgewickelt.',
+  'versendet': 'Ware oder Zugang ist raus, Zahlung läuft.',
+  'storniert': 'Kunde hat abgebrochen, kein Umsatz.',
+  'offen': 'Noch nicht bezahlt.',
+  'rückerstattet': 'Geld ging zurück an den Kunden.',
+  'test': 'Keine echte Bestellung.'
+};
+const ORDER = ['bezahlt', 'abgeschlossen', 'versendet', 'storniert', 'offen', 'rückerstattet', 'test'];
+const RAW = [...new Set(ROWS.map(r => r[0]))];
+const state = { dedup: false, norm: false, on: Object.fromEntries(RAW.map(s => [s, true])) };
+
+const fmt = (x, d = 0) => {
+  const neg = x < 0; x = Math.abs(x);
+  const s = x.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+  return (neg ? '–' : '') + s;
+};
+const chf = x => fmt(x, 2);
+const key = raw => state.norm ? raw.toLowerCase() : raw;
+
+// Soll: bereinigte Bestellungen
+const TARGET = (() => {
+  let n = 0, s = 0;
+  ROWS.forEach(r => { if (!r[2] && VALID.includes(r[0].toLowerCase())) { n++; s += r[1]; } });
+  return { n, s };
+})();
+
+function activeRows() { return ROWS.filter(r => !(state.dedup && r[2])); }
+
+function groups() {
+  const rows = activeRows();
+  const map = new Map();
+  rows.forEach(r => {
+    const k = key(r[0]);
+    if (!map.has(k)) map.set(k, { k, raws: new Set(), n: 0, s: 0 });
+    const g = map.get(k); g.raws.add(r[0]); g.n++; g.s += r[1];
+  });
+  const lower = k => k.toLowerCase();
+  return [...map.values()].sort((a, b) => {
+    const ia = ORDER.indexOf(lower(a.k)), ib = ORDER.indexOf(lower(b.k));
+    return ia - ib || (a.k < b.k ? -1 : 1);
+  });
+}
+
+function isOn(g) { return [...g.raws].every(r => state.on[r]); }
+
+function render() {
+  const gs = groups();
+  const rows = activeRows();
+  const dupTotal = ROWS.filter(r => r[2]).length;
+  document.getElementById('dupcount').textContent = dupTotal + ' Zeilen';
+  document.getElementById('dedup').checked = state.dedup;
+  document.getElementById('norm').checked = state.norm;
+
+  // Statusliste
+  const list = document.getElementById('statuslist');
+  list.innerHTML = '';
+  gs.forEach((g, i) => {
+    const id = 'st' + i;
+    const row = document.createElement('div'); row.className = 'row';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = id; cb.checked = isOn(g);
+    cb.addEventListener('change', () => { g.raws.forEach(r => { state.on[r] = cb.checked; }); render(); });
+    const lb = document.createElement('label'); lb.setAttribute('for', id);
+    lb.textContent = '«' + g.k + '»';
+    const why = document.createElement('span'); why.className = 'why';
+    const base = WHY[g.k.toLowerCase()] || '';
+    why.textContent = (g.k !== g.k.toLowerCase() ? 'Grossgeschrieben, wird sonst übersehen. ' : '') + base;
+    lb.appendChild(why);
+    const num = document.createElement('span'); num.className = 'num'; num.textContent = g.n + ' Zeilen';
+    row.append(cb, lb, num); list.appendChild(row);
+  });
+
+  // Ergebnis
+  let n = 0, s = 0;
+  gs.forEach(g => { if (isOn(g)) { n += g.n; s += g.s; } });
+  document.getElementById('n-rows').textContent = fmt(n);
+  document.getElementById('n-sum').textContent = chf(s);
+
+  const removedDup = ROWS.length - rows.length;
+  const removedStatus = rows.length - n;
+  document.getElementById('calc').textContent =
+    ROWS.length + ' Rohzeilen – ' + removedDup + ' Duplikate – ' + removedStatus + ' abgewählte Status = ' + n + ' Zeilen';
+
+  const dn = n - TARGET.n, ds = s - TARGET.s;
+  const ok = dn === 0 && Math.abs(ds) < 0.005;
+  const pill = document.getElementById('pill');
+  pill.className = 'pill ' + (ok ? 'ok' : 'bad');
+  pill.textContent = ok ? '✓ Stimmt' : (ds > 0 ? '✕ Zu hoch' : (ds < 0 ? '✕ Zu tief' : '✕ Falsche Zeilen'));
+  document.getElementById('delta').textContent = ok ? 'Entspricht den bereinigten Bestellungen.' :
+    'Abweichung: ' + (dn > 0 ? '+' : '') + dn + ' Zeilen, ' + (ds > 0 ? '+' : '') + 'CHF ' + chf(ds);
+  document.getElementById('ref').textContent = 'Richtig sind ' + TARGET.n + ' Bestellungen mit CHF ' + chf(TARGET.s) + '.';
+
+  // Balken
+  const max = Math.max(...gs.map(g => g.s), 1);
+  const bars = document.getElementById('bars'); bars.innerHTML = '';
+  gs.forEach(g => {
+    const on = isOn(g);
+    const b = document.createElement('div'); b.className = 'bar' + (on ? '' : ' off');
+    b.innerHTML = '<span class="name"></span><span class="track"><span class="fill"></span></span><span class="val"></span>';
+    b.querySelector('.name').textContent = g.k;
+    b.querySelector('.fill').style.width = (Math.max(g.s, 0) / max * 100) + '%';
+    b.querySelector('.val').textContent = fmt(g.s);
+    bars.appendChild(b);
+  });
+}
+
+function setAll(v) { RAW.forEach(r => { state.on[r] = v; }); }
+document.getElementById('dedup').addEventListener('change', e => { state.dedup = e.target.checked; render(); });
+document.getElementById('norm').addEventListener('change', e => {
+  state.norm = e.target.checked;
+  if (state.norm) { // Gruppen übernehmen den Zustand der kleingeschriebenen Variante
+    RAW.forEach(r => { const low = r.toLowerCase(); if (low !== r && low in state.on) state.on[r] = state.on[low]; });
+  }
+  render();
+});
+document.getElementById('p-raw').addEventListener('click', () => { state.dedup = false; state.norm = false; setAll(true); render(); });
+document.getElementById('p-err').addEventListener('click', () => {
+  state.dedup = true; state.norm = false;
+  RAW.forEach(r => { state.on[r] = VALID.includes(r); });
+  render();
+});
+document.getElementById('p-clean').addEventListener('click', () => {
+  state.dedup = true; state.norm = true;
+  RAW.forEach(r => { state.on[r] = VALID.includes(r.toLowerCase()); });
+  render();
+});
+render();
+</script>
+
+</body>
+</html>
